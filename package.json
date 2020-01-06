@@ -1,0 +1,17 @@
+{
+  "name": "nodeauthapi",
+  "version": "1.0.0",
+  "description": "DevBack project with Express and JWT for auth.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon app.js"
+  },
+  "author": "Jules Bellamy & Anthony Scotto",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.8.4"
+  }
+}
