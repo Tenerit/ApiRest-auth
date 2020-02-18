@@ -1,16 +1,9 @@
-// const express = require('express');
-// const router = express.Router();
+const express = require('express');
+const router = express.Router();
+const userController = require('../app/api/controllers/users');
 
-// router.get('/', (req, res) => 
-//     res.send('http://localhost:5000/users/login http://localhost:5000/users/register')
-// );
 
-// router.get('/login', (req, res) => 
-//     res.send('Login')
-// );
+router.post('/register', userController.create);
+router.post('/authenticate', userController.authenticate);
 
-// router.get('/register', (req, res) => 
-//     res.send('Register')
-// );
-
-// module.exports = router;
+module.exports = router;
