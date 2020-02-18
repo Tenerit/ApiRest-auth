@@ -5,11 +5,18 @@ const bodyParser = require('body-parser');
 const PORT = process.env.PORT || 5000;
 
 const User = require('./models/users');
-
+const db = mongoose.connection;
 const app = express();
+
+db.on('error', console.error.bind(console, 'Erreur lors de la connexion')); 
+db.once('open', function (){
+    console.log("Connexion à la base OK"); 
+}); 
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
+
+//Connection à la base de données
 
 mongoose.connect('mongodb+srv://boot:yzrMBEwwBEKR2NoZ@cluster0-bkpdt.azure.mongodb.net/test?retryWrites=true&w=majority')
     .then(() => {
@@ -20,42 +27,46 @@ mongoose.connect('mongodb+srv://boot:yzrMBEwwBEKR2NoZ@cluster0-bkpdt.azure.mongo
         console.log(error);
     });
 
+app.use('/', require('./routes/index.js'));
+
+
 app.get('/api', (req, res) => {
   res.json({
     message: 'Welcome to the API'
   });
 });
 
-app.get('/api/:pseudo',(req,res) => {
-    User.find({ pseudo: req.params.pseudo }).then(result => {
-        res.json({
-            authData
+//Get the user named 'pseudo'
+
+app.get('/api/user/:pseudo', async (req,res) => {
+    let user = await User.find({ pseudo: req.params.pseudo }).exec().then(result => {
+        res.send({
+            user
         })
         }).catch( err => {
             res.status(404).json({
-            error: err
+            message: "user not found"
         })
     })
 })
 
+//Delete the user 'pseudo'
+
 app.delete("/api/:pseudo", (req, res, next) => {
-    User.remove({ pseudo: req.params.pseudo })
-      .exec().then(result => {
+    User.remove({ pseudo: req.params.pseudo }) //
+    .exec().then(result => {
         res.status(200).json({
-          message: "User deleted"
+            message: "User deleted"
         });
-      })
-      .catch(err => {
+    }).catch(err => {
         console.log(err);
         res.status(500).json({
-          error: err
+            error: err
         });
-      });
-  });
+    });
+});
 
 
-app.use('/', require('./routes/index.js'));
-// app.use('/users', require('./routes/users.js'));
 
 app.post('/api/posts', verifyToken, (req, res) => {
     jwt.verify(req.token, 'key', (err, authData) => {
@@ -72,10 +83,7 @@ app.post('/api/posts', verifyToken, (req, res) => {
 });
 
 app.post('/api/login', (req, res) => {
-    // const user = new User({
-    //     pseudo,
-    //     password
-    // })
+
     jwt.sign({user}, 'key', (err, token) => {
         res.json({
             token
@@ -83,7 +91,7 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-app.post('/api/signup', (req,res,next) => {
+app.post('/api/signup', (req,res) => {
     User.find({ pseudo: req.body.pseudo }).exec().then(user =>{
         if(user.length >= 1){
             return res.status(409).json({
@@ -95,12 +103,12 @@ app.post('/api/signup', (req,res,next) => {
                 pseudo: req.body.pseudo,
                 password: req.body.password
             })
-            jwt.sign({user}, 'key', (err, token) => {
+            jwt.sign({user}, 'key', { expiresIn: '1h'}, (err, token) => {
                 res.json({
                     token
                 });
             });
-            user.save();
+            user.save(); 
         }
     })
     
@@ -109,9 +117,8 @@ app.post('/api/signup', (req,res,next) => {
 function verifyToken(req, res, next){
     const header = req.headers['authorization'];
     if(typeof(header) !== 'undefined'){
-        const bearer = header.split(' ');
-        const bearerToken = bearer[1];
-        req.token = bearerToken;
+        const bearer = header
+        req.token = bearer;
         next();
     }else{
         res.sendStatus(403)
