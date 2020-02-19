@@ -8,7 +8,7 @@ Just a simple ApiRest with CRUD(Create, Read, Update and Delete) operations on m
 * Node, NPM & MongoDB
 
 
-### Start MongoDB server and store all your collection in your application data folder
+## Start MongoDB server and store all your collection in your application data folder
 
 open terminal navigate to mongo folder where you have installed mostly it will be in c:\Program Files\MongoDB\Server\3.4|3.2\bin
 
